@@ -1,43 +1,30 @@
 import streamlit as st
 import requests
 
-# 🔁 Replace with your deployed API endpoint once it's live
-API_URL = "https://your-api-url.onrender.com/recommend"  # Example placeholder
+st.set_page_config(page_title="Assessment Recommendation", layout="centered")
 
-st.set_page_config(page_title="SHL Assessment Recommendation", layout="centered")
+st.title("🧠 Assessment Recommendation Engine")
+st.write("Enter a job description to get recommended assessments.")
 
-st.title("🧠 SHL Assessment Recommendation Engine")
-st.markdown("This tool suggests the **most relevant SHL assessments** based on your job description or query.")
-st.markdown("---")
+job_description = st.text_area("Job Description", height=200)
 
-# Input box for job description
-job_description = st.text_area("📝 Enter Job Description or Role Requirements:")
-
-# Submit button
-if st.button("🔍 Get Recommendations"):
-    if not job_description.strip():
-        st.warning("Please enter a job description or query.")
-    else:
-        with st.spinner("Analyzing and generating recommendations..."):
+if st.button("Get Recommendations"):
+    if job_description.strip():
+        with st.spinner("Querying API..."):
             try:
-                response = requests.post(API_URL, json={"job_description": job_description})
+                response = requests.post(
+                    "https://assessment-recommendation.onrender.com/recommend",
+                    json={"job_description": job_description},
+                    timeout=10
+                )
                 if response.status_code == 200:
-                    data = response.json()
-                    recommendations = data.get("recommendations", [])
-                    
-                    if recommendations:
-                        st.success("✅ Top 10 Recommended Assessments:")
-                        for idx, rec in enumerate(recommendations, 1):
-                            st.markdown(f"**{idx}. {rec['assessment']}**")
-                            st.markdown(f"- **Relevance Score:** {rec['score']}/10")
-                            st.markdown(f"- **Why:** {rec['explanation']}")
-                            st.markdown("---")
-                    else:
-                        st.info("No recommendations found for the given input.")
+                    result = response.json()
+                    st.success("Recommended Assessments:")
+                    for i, rec in enumerate(result["recommended_assessments"], 1):
+                        st.markdown(f"**{i}. {rec}**")
                 else:
-                    st.error(f"❌ API Error {response.status_code}: {response.text}")
+                    st.error(f"API Error {response.status_code}: {response.text}")
             except Exception as e:
-                st.error(f"⚠️ Failed to connect to API: {e}")
-
-st.markdown("----")
-st.caption("Built with ❤️ using Streamlit and Mixtral (Together.ai)")
+                st.error(f"Something went wrong: {e}")
+    else:
+        st.warning("Please enter a job description.")
