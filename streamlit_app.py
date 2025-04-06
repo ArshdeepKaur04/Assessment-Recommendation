@@ -13,7 +13,7 @@ if st.button("Get Recommendations"):
         with st.spinner("Querying API..."):
             try:
                 response = requests.post(
-                    "https://assessment-recommendation.onrender.com/recommend",
+                    "https://assessment-recommendation.onrender.com/evaluate",
                     json={"job_description": job_description},
                     timeout=10
                 )
