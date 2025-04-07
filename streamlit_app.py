@@ -1,33 +1,17 @@
 import streamlit as st
-import requests
+from recommender import recommend_assessments
 
-st.set_page_config(page_title="Assessment Recommendation", layout="centered")
+st.title("🔍 SHL Assessment Recommender")
 
-st.title("🧠 Assessment Recommendation Engine")
-st.write("Enter a job description to get relevant SHL assessments.")
+query = st.text_input("Enter a job role, skill, or keyword to find assessments")
 
-job_description = st.text_area("Job Description", height=200)
-
-if st.button("Get Recommendation"):
-    if not job_description:
-        st.warning("Please enter a job description.")
+if query:
+    results = recommend_assessments(query)
+    if not results.empty:
+        st.success(f"Found {len(results)} matching assessments:")
+        for _, row in results.iterrows():
+            st.markdown(f"### [{row['Assessment Name']}]({row['URL']})")
+            st.markdown(f"**Explanation:** {row['Explanation']}")
+            st.markdown("---")
     else:
-        try:
-            API_URL = "https://assessment-recommendation.onrender.com/evaluate"
-            response = requests.post(API_URL, json={"query": job_description})
-
-            if response.status_code == 200:
-                data = response.json()
-                st.success("Recommended Assessment")
-
-                st.write("**Assessment Name:**", data["assessment_name"])
-                st.markdown(f"**URL:** [Click here]({data['url']})")
-                st.write("**Remote Testing Support:**", data["remote_testing_support"])
-                st.write("**Adaptive/IRT Support:**", data["adaptive_irt_support"])
-                st.write("**Duration:**", data["duration"])
-                st.write("**Test Type:**", data["test_type"])
-                st.write("**Explanation:**", data["explanation"])
-            else:
-                st.error(f"API Error {response.status_code}: {response.text}")
-        except Exception as e:
-            st.error(f"Request failed: {e}")
+        st.warning("No matching assessments found. Try a different keyword.")

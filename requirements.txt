@@ -1,9 +1,4 @@
+streamlit
 fastapi
 uvicorn
-requests
 pandas
-pydantic
-python-dotenv
-httpx
-streamlit
-openai
