@@ -4,32 +4,30 @@ import requests
 st.set_page_config(page_title="Assessment Recommendation", layout="centered")
 
 st.title("🧠 Assessment Recommendation Engine")
-st.write("Enter a job description and an assessment name to get a relevance score.")
+st.write("Enter a job description to get relevant SHL assessments.")
 
-# User inputs
 job_description = st.text_area("Job Description", height=200)
-assessment_name = st.text_input("Assessment Name", placeholder="e.g., Critical Thinking Test")
 
-# Trigger recommendation
 if st.button("Get Recommendation"):
-    if not job_description or not assessment_name:
-        st.warning("Please fill in both fields.")
+    if not job_description:
+        st.warning("Please enter a job description.")
     else:
         try:
-            API_URL = "https://assessment-recommendation.onrender.com/recommend"
-            payload = {
-                "query": job_description,
-                "assessment_name": assessment_name
-            }
-
-            response = requests.post(API_URL, json=payload)
+            API_URL = "https://assessment-recommendation.onrender.com/evaluate"
+            response = requests.post(API_URL, json={"query": job_description})
 
             if response.status_code == 200:
                 data = response.json()
-                st.success("✅ Recommendation received!")
-                st.write("**Relevance Score:**", data.get("relevance_score", "N/A"))
-                st.write("**Explanation:**", data.get("explanation", "No explanation provided."))
+                st.success("Recommended Assessment")
+
+                st.write("**Assessment Name:**", data["assessment_name"])
+                st.markdown(f"**URL:** [Click here]({data['url']})")
+                st.write("**Remote Testing Support:**", data["remote_testing_support"])
+                st.write("**Adaptive/IRT Support:**", data["adaptive_irt_support"])
+                st.write("**Duration:**", data["duration"])
+                st.write("**Test Type:**", data["test_type"])
+                st.write("**Explanation:**", data["explanation"])
             else:
-                st.error(f"❌ API Error {response.status_code}: {response.text}")
+                st.error(f"API Error {response.status_code}: {response.text}")
         except Exception as e:
-            st.error(f"⚠️ Request failed: {e}")
+            st.error(f"Request failed: {e}")
